@@ -24,7 +24,7 @@
 
 
 form Voice quality
-	sentence Folder ./recordings	
+	sentence Folder ./recordings
 	comment _____
 	comment If you have a TextGrid and want to analyse only certain sounds:
 	sentence label_of_intervals non-empty
@@ -38,14 +38,14 @@ endform
 
 #folder$ = chooseDirectory$ ("Choose a directory to read")
 #creates txt file
-writeFileLine: folder$+ "/"+ "quality_log.txt" , "Filename", tab$, "Interval", tab$, "Interval_label", "duration", tab$, "f0_mean", tab$,  "jitter", tab$,  "shimmer", tab$,  "HNR",tab$,  "voice_breaks",tab$, "locallyunvoiced", tab$, "H1_dB", tab$, "H2_dB", tab$, "H1-H2", tab$, "spectral_peak"
+writeFileLine: folder$+ "/"+ "quality_log.txt" , "Filename", tab$, "Interval", tab$, "Interval_label", tab$, "duration", tab$, "f0_mean", tab$,  "jitter", tab$,  "shimmer", tab$,  "HNR",tab$,  "voice_breaks",tab$, "locallyunvoiced", tab$, "H1_dB", tab$, "H2_dB", tab$, "H1-H2", tab$, "H1-A1", tab$, "spectral_peak"
 
 #creates the list of files
 myList= Create Strings as file list: "list", folder$+ "/" +"*.wav"
 numberOfFiles = Get number of strings
 
 interval = 0
-label$ = ""
+label$ = "-"
 #empieza el bucle
 for ifile to numberOfFiles
 	selectObject: myList
@@ -101,8 +101,8 @@ procedure voice_quality
 	f0medial= Get mean: 0, 0, "Hertz"
 	
 	#cuantiles teoría de Hirst (2011) analysis by synthesis of speach melody
-	q25 = Get quantile: start, end, 0.25, "Hertz"
-	q75 = Get quantile: start, end, 0.75, "Hertz"
+	q25 = Get quantile: 0, 0, 0.25, "Hertz"
+	q75 = Get quantile: 0, 0, 0.75, "Hertz"
 
 	if q25 != undefined
 		f0_floor = q25 * 0.75
@@ -128,7 +128,7 @@ procedure voice_quality
 
 
 	selectObject: mySound, myPitch, myPoints
-	voiceReport$ = Voice report: start, end, f0_floor, f0_ceiling, 1.3, 1.6, 0.03, 0.45
+	voiceReport$ = Voice report: 0, 0, f0_floor, f0_ceiling, 1.3, 1.6, 0.03, 0.45
 
 	minF0= extractNumber (voiceReport$, “Minimum pitch: ”)
 	maxF0= extractNumber (voiceReport$, “Maximum pitch: ”)
@@ -150,12 +150,10 @@ procedure voice_quality
 	removeObject: ltas
 
 	#### H1-H2
-
 	selectObject: mySound
 	To Pitch: 0, f0_floor, f0_ceiling
 	f0 = Get quantile: 0, 0, 0.5, "Hertz"
 	Remove
-
 
 	selectObject: mySound
 	Filter (pass Hann band): f0 - 50, f0 + 50, 100
@@ -171,6 +169,8 @@ procedure voice_quality
 	Remove
 
 	# Convert to dB scale and compute difference
+	# breathy → high H1-H2
+	# creaky → low/negative H1-H2
 	if h1_energy > 0 and h2_energy > 0
 	    h1_db = 10 * log10(h1_energy)
 	    h2_db = 10 * log10(h2_energy)
@@ -179,13 +179,48 @@ procedure voice_quality
 	    h1h2 = undefined
 	endif
 
+
+	# H1-A1: difference in dB between the first harmonic (H1) and the first formant region (A1)
+	# want to do this dynamically when I have the time (I have the code in the formants script)
+	if f0 > 180
+		maximum_formant = 5500
+	else
+		maximum_formant = 5000
+	endif
+
+
+	nFormants = 5
+
+	selectObject: mySound
+
+	myFormants = To Formant (burg): 0, nFormants, maximum_formant, 0.025, 50
+	f1 = Get quantile: 1, 0, 0, "hertz", 0.5
+	removeObject: myFormants
+
+
+	# Extract A1
+	selectObject: mySound
+	a1band = Filter (pass Hann band): f1 - 100, f1 + 100, 200  ; Broader window around F1
+	a1_energy = Get power: 0, 0
+	removeObject: a1band
+
+
+	# Compute H1 and A1 in dB and their difference
+	if h1_energy > 0 and a1_energy > 0
+	    h1_dB = 10 * log10(h1_energy)
+	    a1_dB = 10 * log10(a1_energy)
+	    h1a1 = h1_dB - a1_dB
+	else
+	    h1a1= undefined
+	endif
+
 		appendFile: folder$+ "/"+ "quality_log.txt" , fileName$, tab$, interval, tab$, label$, tab$
 
 
 appendFileLine: folder$+ "/"+ "quality_log.txt" , fixed$ (duration, 2), tab$, meanF0, tab$,
 	... fixed$ (jitter, 3), tab$, fixed$ (shimmer, 3), tab$, fixed$ (hnr, 2), tab$, 
 	... voiceBreaks, tab$, fixed$ (locallyunvoiced,2), tab$, 
-	... fixed$ (h1_db,2), tab$, fixed$ (h2_db, 2), tab$, fixed$ (h1h2,2), tab$, 
+	... fixed$ (h1_db,2), tab$, fixed$ (h2_db, 2), tab$, fixed$ (h1h2,2), tab$, fixed$ (h1a1,2), tab$, 
 	... spectral_peak$
 
 
