@@ -29,7 +29,6 @@ The analysis was performed using this script, and the values below were estimate
 Beware: The script outputs percentages as decimals. For example, a value of 0.03 in the output corresponds to 3% at the table below.
 
 | Measure               | Mean     | Standard Deviation | Lower Range | Upper Range |
-
 |-----------------------|----------|--------------------|-------------|-------------|
 | Min F0 (Hz)           | 163.61   | 46.63              | 93.67       | 233.56      |
 | Max F0 (Hz)           | 213.27   | 15.64              | 189.82      | 236.73      |
