@@ -13,7 +13,12 @@
 #		
 #	2. OUTPUT: txt file saves in the same folder as the data with:
 #  "Filename", tab$, "duration", tab$, "f0_mean", tab$,  "jitter", tab$,  "shimmer", tab$,  "HNR",tab$,  "voice_breaks",tab$, "locallyunvoiced", tab$, "H1_dB", tab$, "H2_dB", tab$, "H1-H2", tab$, "spectral_peak"
-#	Any feedback is welcome, please if you notice any mistakes or come up with anything that can improve this script, let me know!
+#	
+# 	You can find threshold values for whatsapp recordings with this settings at https://github.com/wendyelviragarcia/voice_quality
+#
+#
+#
+# Any feedback is welcome, please if you notice any mistakes or come up with anything that can improve this script, let me know!
 #
 #		Wendy Elvira-García
 #		Laboratory of Phonetics (University of Barcelona)
@@ -97,7 +102,7 @@ procedure voice_quality
 	selectObject: mySound
 	duration = Get total duration
 
-	myPitchCheck= To Pitch (filtered autocorrelation): f0_floor, f0_ceiling, 800, 15, "no", 0.03, 0.09, 0.5, 0.055, 0.35, 0.14
+	myPitchCheck= To Pitch (raw autocorrelation): 0, f0_floor, f0_ceiling, 15, "no", 0.03, 0.09, 0.5, 0.055, 0.35, 0.14
 	f0medial= Get mean: 0, 0, "Hertz"
 	
 	#cuantiles teoría de Hirst (2011) analysis by synthesis of speach melody
