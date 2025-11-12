@@ -101,8 +101,8 @@ procedure voice_quality
 
 	selectObject: mySound
 	duration = Get total duration
-
-	myPitchCheck= To Pitch (raw autocorrelation): 0, f0_floor, f0_ceiling, 15, "no", 0.03, 0.09, 0.5, 0.055, 0.35, 0.14
+	myPitchCheck= To Pitch (raw autocorrelation): 0, f0_floor, f0_ceiling, 15, "no", 0.03, 0.45, 0.01, 0.35, 0.14
+	#myPitchCheck= To Pitch (filtered autocorrelation): 0, f0_floor, f0_ceiling, 15, "no", 0.03, 0.09, 0.5, 0.055, 0.35, 0.14
 	f0medial= Get mean: 0, 0, "Hertz"
 	
 	#cuantiles teoría de Hirst (2011) analysis by synthesis of speach melody
@@ -128,6 +128,7 @@ procedure voice_quality
 	selectObject: mySound
 	myPitch= To Pitch (raw cross-correlation): 0, f0_floor, f0_ceiling, 15, "no", 0.03, 0.45, 0.01, 0.35, 0.14
 	
+
 	selectObject: mySound
 	myPoints= To PointProcess (zeroes): 1, "yes", "no"
 
